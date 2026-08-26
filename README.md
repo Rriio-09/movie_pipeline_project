@@ -1,471 +1,607 @@
 # Movie Picture Pipeline
 
-You've been brought on as the DevOps resource for a development team that manages a web application that is a catalog of Movie Picture movies. They're in dire need of automating their development workflows in hopes of accelerating their release cycle. They'd like to use Github Actions to automate testing, building and deploying their applications to an existing Kubernetes cluster.
+Movie Picture Pipeline is a full-stack cloud application that demonstrates an automated CI/CD pipeline for a React frontend and Python backend.
 
-The team's project is comprised of 2 applications.
+The application is containerized using Docker, deployed to Amazon EKS using Kubernetes, stores container images in Amazon ECR, provisions AWS infrastructure using Terraform, and uses GitHub Actions for Continuous Integration and Continuous Deployment.
 
-1. A frontend UI written in Typescript, using the React framework
-2. A backend API written in Python using the Flask framework.
+---
 
-You'll find 2 folders, one named `frontend` and one named `backend`, where each application's source code is maintained. Your job is to use the team's [existing documentation](#frontend-development-notes) and create CI/CD pipelines to meet the teams' needs.
+## Project Links
 
-## Deliverables
+### GitHub Repository
+
+https://github.com/Rriio-09/movie_pipeline_project
+
+### Frontend Application
+
+http://a2ec729a09bf64209946420746744b01-458530145.us-east-1.elb.amazonaws.com
+
+### Backend Movies API
+
+http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com/movies
+
+---
+
+## Project Architecture
+
+The application consists of two independently containerized services:
+
+- **Frontend:** React application
+- **Backend:** Python/Flask REST API
+
+Both services are built as Docker images and stored in separate Amazon ECR repositories.
+
+GitHub Actions automatically performs testing, Docker image creation, image publishing, and deployment to Amazon EKS.
+
+The deployed frontend communicates with the backend through the public backend LoadBalancer.
+
+```text
+                    GitHub Repository
+                           |
+                           v
+                     GitHub Actions
+                    CI             CD
+                     |              |
+                     v              v
+              Tests / Lint     Docker Build
+                                    |
+                                    v
+                               Amazon ECR
+                                    |
+                                    v
+                               Amazon EKS
+                         ___________|___________
+                        |                       |
+                        v                       v
+                 Frontend Pod             Backend Pod
+                        |                       |
+                        v                       v
+                  LoadBalancer             LoadBalancer
+                        |                       |
+                        v                       v
+                   React App              /movies API
+```
+
+---
+
+## Technologies Used
 
 ### Frontend
 
-1. A Continuous Integration workflow that:
-   1. Runs on `pull_requests` against the `main` branch,only when code in the frontend application changes.
-   2. Is able to be run on-demand (i.e. manually without needing to push code)
-   3. Runs the following jobs in parallel:
-      1. Runs a linting job that fails if the code doesn't adhere to eslint rules
-      2. Runs a test job that fails if the test suite doesn't pass
-   4. Runs a build job only if the lint and test jobs pass and successfully builds the application
-2. A Continuous Deployment workflow that:
-   1. Runs on `push` against the `main` branch, only when code in the frontend application changes.
-   2. Is able to be run on-demand (i.e. manually without needing to push code)
-   3. Runs the same lint/test jobs as the Continuous Integration workflow
-   4. Runs a build job only when the lint and test jobs pass
-      1. The built docker image should be tagged with the git sha
-   5. Runs a deploy job that applies the Kubernetes manifests to the provided cluster.
-      1. The manifest should deploy the newly created tagged image
-      2. The tag applied to the image should be the git SHA of the commit that triggered the build
+- React
+- JavaScript
+- Node.js
+- npm
+- Docker
 
 ### Backend
 
-1. A Continuous Integration workflow that:
-   1. Runs on `pull_requests` against the `main` branch,only when code in the frontend application changes.
-   2. Is able to be run on-demand (i.e. manually without needing to push code)
-   3. Runs the following jobs in parallel:
-      1. Runs a linting job that fails if the code doesn't adhere to eslint rules
-      2. Runs a test job that fails if the test suite doesn't pass
-   4. Runs a build job only if the lint and test jobs pass and successfully builds the application
-2. A Continuous Deployment workflow that:
-   1. Runs on `push` against the `main` branch, only when code in the frontend application changes.
-   2. Is able to be run on-demand (i.e. manually without needing to push code)
-   3. Runs the same lint/test jobs as the Continuous Integration workflow
-   4. Runs a build job only when the lint and test jobs pass
-      1. The built docker image should be tagged with the git sha
-   5. Runs a deploy job that applies the Kubernetes manifests to the provided cluster.
-      1. The manifest should deploy the newly created tagged image
-      2. The tag applied to the image should be the git SHA of the commit that triggered the build
+- Python
+- Flask
+- Pipenv
+- uWSGI
+- Docker
 
+### Cloud and DevOps
 
-**⚠️ NOTE**
-Once you begin work on Continuous Deployment, you'll need to first setup the AWS and Kubernetes environment. Follow [these instructions ](#setting-up-continuous-deployment-environment) only when you're ready to start testing your deployments.
+- Amazon Web Services (AWS)
+- Amazon Elastic Kubernetes Service (EKS)
+- Amazon Elastic Container Registry (ECR)
+- Elastic Load Balancer
+- Kubernetes
+- Terraform
+- Docker
+- GitHub Actions
+- CI/CD
 
-## One-time setup instructions
+---
 
-The project assumes you'll be working in the Udacity workspace where all the necessary system dependencies are installed and setup, ready for use.
-The following steps are required to be run only once to initialize and create your repository with all the files that you'll use for the project.
-### Login
-Launch the Udacity workspace and open the terminal in VSCode to start executing the following commands:
-1. Start the login process with `gh`
-```bash
-gh auth login
-```
-   2. Select `Github.com`
-   3. Select `HTTPS`
-   4. Enter `Y` or just press **Enter** to authenticate with Github credentials
-   5. Select **Login with a web browser**
-   6. Highlight and copy the one-time code then press **Enter** to open the browser
-   7. If VSCode pops-up with a warning, click **Open**
-   8. Enter your Github credentials at the login page
-      1. You may need to perform your 2FA step next
-   9. Paste in the one-time code that was given on the CLI prompt and click **Continue**
-      1. If you're prompted for authorizing access to any organizations, you don't have to do that. The `gh` cli for this course just needs to be able to create repos in your personal account.
-   10. Click authorize to allow the Github CLI to access your repository information.
-   11. You can close the Github window and go back to the Udacity workspace tab
+## Repository Structure
 
-### Configuration
-Next you'll need to configure git to use your desired email.
-
-If you already know what email you'd like to use, great! If you'd like to use the `noreply` email address that Github offers, follow [these instructions](https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/setting-your-commit-email-address#setting-your-commit-email-address-on-github)
-
-**Configure git with your email address**
-```bash
-git config --global user.email "YOUR_EMAIL"
-```
-   
-Now we'll finish up by initializing the repository and using the `gh` command to push the files to a new repository under you Github account. The last command uses `udacity-build-cicd-project` as the repository name, but you can change this to be whatever you'd like that doesn't conflict with an existing repo name in your account.
-
-**Initialize the workspace as a git repository**
-```bash
-git init
-```
-   
-**Stage the workspace files for committing**
-```bash
-git add .
-```
-   
-**Commit the workspace files**
-```bash
-git commit -m "initial"
-```
-   
-**Create your public repository and push the initial changes (it needs to be public to allow Github Actions to run for free)**
-```bash
-gh repo create udacity-build-cicd-project --source=. --public --push
+```text
+movie_pipeline_project/
+|
+├── .github/
+│   └── workflows/
+│       ├── frontend-ci.yaml
+│       ├── backend-ci.yaml
+│       ├── frontend-cd.yaml
+│       └── backend-cd.yaml
+│
+├── starter/
+│   ├── frontend/
+│   │   ├── Dockerfile
+│   │   ├── package.json
+│   │   ├── package-lock.json
+│   │   └── src/
+│   │
+│   └── backend/
+│       ├── Dockerfile
+│       ├── Pipfile
+│       ├── Pipfile.lock
+│       └── ...
+│
+├── setup/
+│   ├── terraform/
+│   ├── init.sh
+│   └── workspace-setup.sh
+│
+└── README.md
 ```
 
-As you work on the project, you won't need to create or initialize the repo again. You'll just need to make changes to your workflows in the `.github/workflows` folder, and perform `git add .` `git commit` and `git push` commands to make the files available in your repository and view your actions in the Github Actions interface.
+---
 
+# CI/CD Pipelines
 
-## Setting up Continuous Deployment environment
+The repository contains four GitHub Actions workflows.
 
-Only complete these steps once you've finished your Continuous Integration pipelines for the frontend and backend applications. This section is meant to create a Kubernetes environment for you to deploy the applications to and verify the deployment step.
+## Frontend Continuous Integration
 
-First we need to prep the AWS account with the necessary infrastructure for deploying the frontend and backend applications. As the focus of this course is building the CI/CD pipelines, we won't be requiring you to setup all of the underlying AWS and Kubernetes infrastructure. This will be done for you with the provided Terraform and helper scripts. As there are costs associated with running this infrastucture, **REMEMBER** to destroy everything before stopping work. Everything can be recreated, and the pipeline work you'll be doing is all saved in this repository.
+Workflow:
 
-### Create AWS infrastructure with Terraform
+```text
+.github/workflows/frontend-ci.yaml
+```
 
-1. Export your AWS credentials from the Cloud Gateway
-2. Use the commands below to run the Terraform and type `yes` after reviewing the expected changes
+The Frontend CI pipeline validates frontend changes before they are merged.
+
+The workflow performs:
+
+1. Repository checkout
+2. Node.js dependency installation
+3. Frontend linting
+4. Frontend automated tests
+5. Frontend Docker image build validation
+
+The workflow runs for frontend changes associated with pull requests to the `main` branch and can also be executed manually.
+
+---
+
+## Backend Continuous Integration
+
+Workflow:
+
+```text
+.github/workflows/backend-ci.yaml
+```
+
+The Backend CI pipeline validates backend changes.
+
+The workflow performs:
+
+1. Repository checkout
+2. Python dependency installation
+3. Backend linting
+4. Backend automated tests
+5. Backend Docker image build validation
+
+The Docker build runs only after the required validation jobs complete successfully.
+
+The workflow runs for backend changes associated with pull requests to the `main` branch and can also be executed manually.
+
+---
+
+## Backend Continuous Deployment
+
+Workflow:
+
+```text
+.github/workflows/backend-cd.yaml
+```
+
+The Backend CD pipeline deploys the backend application to AWS.
+
+The deployment process includes:
+
+1. Checkout repository
+2. Run backend validation
+3. Configure AWS credentials
+4. Authenticate with Amazon ECR
+5. Build the backend Docker image
+6. Tag the Docker image using the Git commit SHA
+7. Push the image to the backend ECR repository
+8. Configure access to the Amazon EKS cluster
+9. Update the Kubernetes backend deployment
+10. Verify the Kubernetes rollout
+
+The backend is exposed publicly using a Kubernetes `LoadBalancer` service.
+
+### Backend API
+
+```text
+http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com/movies
+```
+
+The `/movies` endpoint returns the movie data used by the frontend application.
+
+---
+
+## Frontend Continuous Deployment
+
+Workflow:
+
+```text
+.github/workflows/frontend-cd.yaml
+```
+
+The Frontend CD pipeline deploys the React application to AWS.
+
+The deployment process includes:
+
+1. Checkout repository
+2. Run frontend validation
+3. Validate the backend API URL
+4. Configure AWS credentials
+5. Authenticate with Amazon ECR
+6. Build the frontend Docker image
+7. Inject the backend URL using `REACT_APP_MOVIE_API_URL`
+8. Tag the Docker image using the Git commit SHA
+9. Push the image to the frontend ECR repository
+10. Deploy the new image to Amazon EKS
+11. Verify the Kubernetes rollout
+
+The frontend is exposed publicly through a Kubernetes `LoadBalancer` service.
+
+### Frontend Application
+
+```text
+http://a2ec729a09bf64209946420746744b01-458530145.us-east-1.elb.amazonaws.com
+```
+
+---
+
+# AWS Infrastructure
+
+Terraform is used to provision the AWS infrastructure required by the application.
+
+The infrastructure includes resources required for:
+
+- Amazon EKS
+- Amazon ECR
+- IAM
+- Kubernetes worker infrastructure
+- Networking
+- Application deployment
+
+### AWS Region
+
+```text
+us-east-1
+```
+
+### EKS Cluster
+
+```text
+cluster
+```
+
+### ECR Repositories
+
+```text
+frontend
+backend
+```
+
+---
+
+# Creating the AWS Infrastructure
+
+Navigate to the Terraform directory:
 
 ```bash
 cd setup/terraform
+```
+
+Initialize Terraform:
+
+```bash
+terraform init
+```
+
+Validate the Terraform configuration:
+
+```bash
+terraform validate
+```
+
+Review the infrastructure plan:
+
+```bash
+terraform plan
+```
+
+Create the infrastructure:
+
+```bash
 terraform apply
 ```
 
-4. Take note of the Terraform outputs. You'll need these later as you work on the project. You can always retrieve these values later with this command
+Review the Terraform outputs:
 
 ```bash
-cd setup/terraform
 terraform output
 ```
 
-### Generate AWS access keys for Github Actions
+---
 
-1. Once everything is created, you'll need to generate AWS credentials for the IAM user account that Github Actions will use in order to interact with your AWS account.
-2. Launch the Cloud Gateway and go to the IAM service.
-3. Under users, you should only see the `github-action-user` user account
-4. Click the account and go to `Security Credentials`
-5. Under `Access keys`  select `Create access key`
-6. Select `Application running outside AWS` and click `Next`, then `Create access key` to finish creating the keys
-7. On the last page, make sure to copy/paste these keys for storing in Github Secrets
-![image](https://user-images.githubusercontent.com/57732284/221991526-ec4af661-b200-48cd-9087-6f1b3b9820b3.png)
+# Configuring Amazon EKS
 
-### Add Github Action user to Kubernetes
+Configure `kubectl` to communicate with the EKS cluster:
 
-Now that the cluster and all AWS resources have been created, you'll need to add the `github-action-user` IAM user ARN to the Kubernetes configuration that will allow that user to execute `kubectl` commands against the cluster.
+```bash
+aws eks update-kubeconfig --name cluster --region us-east-1
+```
 
-1. Run the `init.sh` helper script in the `setup` folder
+Verify that the worker nodes are available:
+
+```bash
+kubectl get nodes
+```
+
+The project initialization script can then be used to configure the required Kubernetes access:
 
 ```bash
 cd setup
 ./init.sh
 ```
 
-2. The script will download a tool, add the IAM user ARN to the authentication configuration, indicate a `Done` status, then it'll remove the tool
+---
 
-## Dependencies
+# GitHub Actions Secrets
 
-We've provided the below list of dependencies to assist in the case you'd like to run any of the work locally. Local development issues, however, are not supported as we cannot control the environment as we can in the online workspace.
+Repository secrets are configured under:
 
-All of the tools below will be available in the workspace
-
-* [docker](https://docs.docker.com/desktop/install/debian/) - Used to build the frontend and backend applications
-* [kubectl](https://kubernetes.io/docs/tasks/tools/) - Used to apply the kubernetes manifests
-* [pipenv](https://pipenv.pypa.io/en/latest/install/#pragmatic-installation-of-pipenv) - Used for mananging Python version and dependencies
-* [nvm](https://github.com/nvm-sh/nvm#installing-and-updating) - Used for managing NodeJS versions
-* [tfswitch](https://tfswitch.warrensbox.com/Install/) Used for managing Terraform versions
-* [kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/) Used for building the Kubernetes manifests dynamically in the CI environment
-* [jq](https://stedolan.github.io/jq/download/) for parsing JSON more easily on the command line
-
-## Frontend Development notes
-
-### Running tests
-
-While in the frontend directory, perform the following steps:
-
-```bash
-# Use correct NodeJS version
-nvm use
-
-# Install dependencies
-npm ci
-
-# Run the tests interactively. You'll need to press `a` to run the tests
-npm test
-
-# OR simulate running the tests in a CI environment
-CI=true npm test
-
-
-# Expected output
-PASS src/components/__tests__/MovieList.test.js
-PASS src/components/__tests__/App.test.js
-
-Test Suites: 2 passed, 2 total
-Tests:       3 passed, 3 total
-Snapshots:   0 total
-Time:        1.33 s
-Ran all test suites.
+```text
+Repository
+→ Settings
+→ Secrets and variables
+→ Actions
 ```
 
-To simulate a failure in the test coverage, which will be needed to ensure your CI/CD pipeline fails on bad tests, set the MOVIE_HEADING variable before the command like so:
+The following secrets are required:
 
-```bash
-FAIL_TEST=true CI=true npm test
+| Secret | Purpose |
+| --- | --- |
+| `AWS_ACCESS_KEY_ID` | AWS access key used by the deployment workflows |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key used by the deployment workflows |
+| `REACT_APP_MOVIE_API_URL` | Public base URL of the backend application |
+
+AWS credentials are stored using GitHub Actions Secrets and are not hard-coded in the workflow files.
+
+### Backend URL used by the React application
+
+```text
+http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com
 ```
 
-As the test is expecting the heading to contain a certain value, we can simulate a failure by changing it with an inline or environment variable. If you use the environment variable, make sure to unset it when you're done testing
+The `REACT_APP_MOVIE_API_URL` value contains the backend base URL.
+
+The `/movies` endpoint is accessed by the frontend application when retrieving movie data.
+
+---
+
+# Docker
+
+Both application components have separate Docker images.
+
+## Build Backend Image Locally
+
+From the repository root:
 
 ```bash
-# Expect tests to fail with this set to anything except Movie List
-export FAIL_TEST=true
-CI=true npm test
-
-# Expect tests to be passing again
-unset MOVIE_HEADING
-CI=true npm test
+docker build -t movie-backend:local starter/backend
 ```
+
+## Build Frontend Image Locally
 
 ```bash
-# Expected failure output
-FAIL src/components/__tests__/App.test.js
-  ● renders Movie List heading
-
-    TestingLibraryElementError: Unable to find an element with the text: messed_up. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
-
-    Ignored nodes: comments, script, style
-    <body>
-      <div>
-        <div>
-          <h1>
-            Movie List
-          </h1>
-          <ul />
-        </div>
-      </div>
-    </body>
-
-       8 | test('renders Movie List heading', () => {
-       9 |   render(<App />);
-    > 10 |   const linkElement = screen.getByText(movieHeading);
-         |                              ^
-      11 |   expect(linkElement).toBeInTheDocument();
-      12 | });
-      13 |
-
-      at Object.getElementError (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/config.js:37:19)
-      at allQuery (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:76:38)
-      at query (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:52:17)
-      at getByText (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
-      at Object.<anonymous> (src/components/__tests__/App.test.js:10:30)
-
-PASS src/components/__tests__/MovieList.test.js
+docker build \
+  --build-arg REACT_APP_MOVIE_API_URL=http://localhost:5000 \
+  -t movie-frontend:local \
+  starter/frontend
 ```
 
-### Running linter
+The production CI/CD pipelines build and publish the images automatically.
 
-When there are no linting errors, the output won't return any errors
+---
+
+# Kubernetes Deployment
+
+The frontend and backend are deployed independently to Amazon EKS.
+
+Check the running pods:
 
 ```bash
-npm run lint
-
-# Expected output
-> frontend@1.0.0 lint
-> eslint .
+kubectl get pods
 ```
 
-To simulate linting errors, you can run the linting command like so:
+Check deployments:
 
 ```bash
-FAIL_LINT=true npm run lint
-
-# Expected output
-> frontend@1.0.0 lint
-> eslint .
-
-
-/home/kirby/udacity/ci-cd/project/solution/frontend/src/components/MovieDetails.js
-  4:24  error  'movie' is missing in props validation     react/prop-types
-  7:70  error  'movie.id' is missing in props validation  react/prop-types
-
-✖ 2 problems (2 errors, 0 warnings)
+kubectl get deployments
 ```
 
-### Build and run
-
-For local development without docker, the developers use the following commands:
+Check services:
 
 ```bash
-cd starter/frontend
-
-# Install dependencies
-npm ci
-
-# Run local development server with hot reloading and point to the backend default
-REACT_APP_MOVIE_API_URL=http://localhost:5000 npm start
+kubectl get services
 ```
 
-To build the frontend application for a production deployment, they use the following commands:
+Check all Kubernetes resources:
 
 ```bash
-# Build the image
-# NOTE: Make sure the image is built with the URL of the backend system.
-# The URL below would be the default backend URL when running locally
-docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag=mp-frontend:latest .
-
-docker run --name mp-frontend -p 3000:3000 -d mp-frontend]
-
-# Open the browser to localhost:3000 and you should see the list of movies,
-# provided the backend is already running and available on localhost:5000
+kubectl get all
 ```
 
-### Deploy Kubernetes manifests
+Both applications are exposed through Kubernetes `LoadBalancer` services.
 
-In order to build the Kubernetes manifests correctly, the team uses `kustomize` in the following way:
+---
+
+# Backend Verification
+
+Check the backend service:
 
 ```bash
-cd starter/frontend/k8s
-# Make sure you're kubeconfig is configured for the EKS cluster, i.e.
-# aws eks update-kubeconfig
-
-# Set the image tag to the newer version
-# ℹ️ Don't commit any changes to the manifests that this command introduces
-kustomize edit set image frontend=<ECR_REPO_URL>:<NEW_TAG_HERE>
-
-# Apply the manifests to the cluster
-kustomize build | kubectl apply -f -
+kubectl get service backend
 ```
 
-## Backend Development notes
-
-### Running tests
-
-While in the backend directory, perform the following steps:
+Check backend logs:
 
 ```bash
-# Install dependencies
-pipenv install
-
-# Run the tests
-pipenv run test
-
-# Expected output
-================================================================== test session starts ==================================================================
-platform linux -- Python 3.10.6, pytest-7.2.1, pluggy-1.0.0 -- /home/kirby/.local/share/virtualenvs/backend-AXGg_iGk/bin/python
-cachedir: .pytest_cache
-rootdir: /home/kirby/udacity/cd12354-build-ci-cd-pipelines-monitoring-and-logging/project/solution/backend
-collected 3 items
-
-test_app.py::test_movies_endpoint_returns_200 PASSED                                                                                              [ 33%]
-test_app.py::test_movies_endpoint_returns_json PASSED                                                                                             [ 66%]
-test_app.py::test_movies_endpoint_returns_valid_data PASSED                                                                                       [100%]
+kubectl logs deployment/backend --tail=100
 ```
 
-To simulate failing the backend tests, run the following command:
+Verify the public backend API:
 
 ```bash
-FAIL_TEST=true pipenv run test
-
-# Expected output
-==================================================================== test session starts ====================================================================
-platform linux -- Python 3.10.6, pytest-7.2.1, pluggy-1.0.0 -- /home/kirby/.local/share/virtualenvs/backend-AXGg_iGk/bin/python
-cachedir: .pytest_cache
-rootdir: /home/kirby/udacity/ci-cd/project/solution/backend
-collected 3 items
-
-test_app.py::test_movies_endpoint_returns_200 FAILED                                                                                                  [ 33%]
-test_app.py::test_movies_endpoint_returns_json PASSED                                                                                                 [ 66%]
-test_app.py::test_movies_endpoint_returns_valid_data PASSED                                                                                           [100%]
-
-========================================================================= FAILURES ==========================================================================
-_____________________________________________________________ test_movies_endpoint_returns_200 ______________________________________________________________
-
-    def test_movies_endpoint_returns_200():
-        with app.test_client() as client:
-            status_code = os.getenv("FAIL_TEST", 200)
-            response = client.get("/movies/")
->           assert response.status_code == status_code
-E           AssertionError: assert 200 == 'true'
-E            +  where 200 = <WrapperTestResponse streamed [200 OK]>.status_code
-
-test_app.py:9: AssertionError
-================================================================== short test summary info ==================================================================
-FAILED test_app.py::test_movies_endpoint_returns_200 - AssertionError: assert 200 == 'true'
-================================================================ 1 failed, 2 passed in 0.11s ================================================================
+curl http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com/movies
 ```
 
-### Running linter
+A successful request returns the movie list as JSON.
 
-When there are no linting errors, there won't be any output.
+---
+
+# Frontend Verification
+
+Check the frontend service:
 
 ```bash
-pipenv run lint
-# No output
+kubectl get service frontend
 ```
 
-To simulate linting errors, you can run the linting command below. The command overrides our lint configuration and will error if any lines are over 88 characters.
+Get the public frontend hostname:
 
 ```bash
-pipenv run lint-fail
-
-# Expected output
-./movies/__init__.py:7:89: E501 line too long (120 > 88 characters)
-./movies/__init__.py:9:89: E501 line too long (101 > 88 characters)
-./movies/movies_api.py:7:89: E501 line too long (120 > 88 characters)
-./movies/movies_api.py:9:89: E501 line too long (101 > 88 characters)
-./movies/resources.py:16:89: E501 line too long (117 > 88 characters)
+kubectl get service frontend -o jsonpath="{.status.loadBalancer.ingress[0].hostname}"
 ```
 
-### Build and run
+The deployed frontend is available at:
 
-For local development without docker, the developers use the following commands to build and run the backend application:
+```text
+http://a2ec729a09bf64209946420746744b01-458530145.us-east-1.elb.amazonaws.com
+```
+
+The React application retrieves its movie information from the deployed backend API.
+
+---
+
+# Workflow Verification
+
+Successful GitHub Actions runs should exist for all four required workflows:
+
+| Workflow | Purpose |
+| --- | --- |
+| Frontend Continuous Integration | Lint, test and validate frontend changes |
+| Backend Continuous Integration | Lint, test and validate backend changes |
+| Frontend Continuous Deployment | Build, publish and deploy the frontend |
+| Backend Continuous Deployment | Build, publish and deploy the backend |
+
+The CI pipelines are used to validate application changes.
+
+The CD pipelines publish Docker images to Amazon ECR and deploy the corresponding application to Amazon EKS.
+
+---
+
+# Deployment URLs
+
+| Component | URL |
+| --- | --- |
+| Frontend | http://a2ec729a09bf64209946420746744b01-458530145.us-east-1.elb.amazonaws.com |
+| Backend Movies API | http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com/movies |
+
+---
+
+# Submission Evidence
+
+Before destroying the AWS infrastructure, screenshots should be captured showing the successful deployment.
+
+## Frontend
+
+Open the deployed application:
+
+```text
+http://a2ec729a09bf64209946420746744b01-458530145.us-east-1.elb.amazonaws.com
+```
+
+The screenshot should show the application and the public URL.
+
+
+<img width="1365" height="682" alt="image" src="https://github.com/user-attachments/assets/883e1065-5670-4bdb-84e2-72c8f8d1740a" />
+
+## Backend
+
+Open or verify:
+
+```text
+http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com/movies
+```
+
+The response should show the movie JSON.
+<img width="1365" height="683" alt="Screenshot 2026-08-26 222443" src="https://github.com/user-attachments/assets/4083f792-c310-44cd-9a19-dbd1ebb9be8c" />
+
+## Kubernetes
+
+Run:
 
 ```bash
-cd starter/backend
-
-# Install dependencies
-pipenv install
-
-# Run application
-pipenv run serve
+kubectl get all
 ```
 
-For production deployments, the team uses the following commands to build and run the Docker image.
+Capture the output showing the deployed frontend and backend resources.
+
+## GitHub Actions
+
+Successful runs should be visible for:
+
+- Frontend Continuous Integration
+- Backend Continuous Integration
+- Frontend Continuous Deployment
+- Backend Continuous Deployment
+
+---
+
+# Destroying the Infrastructure
+
+After all required deployment evidence has been captured, the AWS infrastructure can be destroyed to avoid unnecessary resource usage.
+
+Navigate to:
 
 ```bash
-cd starter/backend
-
-# Build the image
-docker build --tag mp-backend:latest .
-
-# Run the image
-docker run -p 5000:5000 --name mp-backend -d mp-backend
-
-# Check the running application
-curl http://localhost:5000/movies
-
-# Review logs
-docker logs -f mp-backend
-
-# Expected output
-{"movies":[{"id":"123","title":"Top Gun: Maverick"},{"id":"456","title":"Sonic the Hedgehog"},{"id":"789","title":"A Quiet Place"}]}
-
-# Stop the application
-docker stop
+cd setup/terraform
 ```
 
-### Deploy Kubernetes manifests
-
-In order to build the Kubernetes manifests correctly, the team uses `kustomize` in the following way:
+Run:
 
 ```bash
-cd starter/backend/k8s
-# Make sure you're kubeconfig is configured for the EKS cluster, i.e.
-# aws eks update-kubeconfig
-
-# Set the image tag to the newer version
-# ℹ️ Don't commit any changes to the manifests that this command introduces
-kustomize edit set image backend=<ECR_REPO_URL>:<NEW_TAG_HERE>
-
-# Apply the manifests to the cluster
-kustomize build | kubectl apply -f -
+terraform destroy
 ```
 
-## License
+Review the resources and confirm the operation when prompted.
 
-[License](LICENSE.md)
+---
+
+# Final Project Information
+
+| Item | Value |
+| --- | --- |
+| Project | Movie Picture Pipeline |
+| GitHub Repository | https://github.com/Rriio-09/movie_pipeline_project |
+| Frontend | http://a2ec729a09bf64209946420746744b01-458530145.us-east-1.elb.amazonaws.com |
+| Backend Movies API | http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com/movies |
+| AWS Region | `us-east-1` |
+| EKS Cluster | `cluster` |
+| Frontend ECR Repository | `frontend` |
+| Backend ECR Repository | `backend` |
+
+---
+
+## Project Status
+
+- Frontend Continuous Integration — Successful
+- Backend Continuous Integration — Successful
+- Frontend Continuous Deployment — Successful
+- Backend Continuous Deployment — Successful
+- Frontend deployed to Amazon EKS
+- Backend deployed to Amazon EKS
+- Docker images stored in Amazon ECR
+- Infrastructure managed using Terraform
