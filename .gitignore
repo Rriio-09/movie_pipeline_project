@@ -1,0 +1,16 @@
+node_modules
+.pytest_cache
+.terraform
+.terraform.tfstate.lock.info
+*.tfstate.backup
+credentials
+.pytest_cache
+# Terraform runtime/state files must stay local
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Local environment/secrets
+.env
+.env.*
+!.env.example
