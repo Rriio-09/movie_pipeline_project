@@ -140,12 +140,6 @@ The backend CD pipeline:
 8. Deploys the backend to Kubernetes
 9. Exposes the backend using an AWS LoadBalancer
 
-The backend is deployed at:
-
-```text
-http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com
-```
-
 Movies endpoint:
 
 ```text
