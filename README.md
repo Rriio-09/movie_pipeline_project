@@ -1,607 +1,209 @@
-# Movie Picture Pipeline
+# Movie Pipeline Project
 
-Movie Picture Pipeline is a full-stack cloud application that demonstrates an automated CI/CD pipeline for a React frontend and Python backend.
+## 🔗 Project Links
 
-The application is containerized using Docker, deployed to Amazon EKS using Kubernetes, stores container images in Amazon ECR, provisions AWS infrastructure using Terraform, and uses GitHub Actions for Continuous Integration and Continuous Deployment.
+| Resource | Link |
+|---|---|
+| 📁 GitHub Repository | [Open GitHub Repository](https://github.com/Rriio-09/movie_pipeline_project) |
+| 🌐 Frontend Application | [Open Frontend Application](http://a2ec729a09bf64209946420746744b01-458530145.us-east-1.elb.amazonaws.com) |
+| 🔧 Backend Movies API | [Open Backend API](http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com/movies) |
+
+## Project Overview
+
+This project implements a complete CI/CD pipeline for a frontend and backend application using:
+
+- GitHub Actions
+- Docker
+- Amazon ECR
+- Amazon EKS
+- Kubernetes
+- AWS Load Balancers
+
+The project contains separate Continuous Integration (CI) and Continuous Deployment (CD) workflows for both the frontend and backend.
 
 ---
 
-## Project Links
+## CI/CD Workflows
 
-### GitHub Repository
+The repository contains four GitHub Actions workflows:
 
-https://github.com/Rriio-09/movie_pipeline_project
+1. Frontend Continuous Integration
+2. Frontend Continuous Deployment
+3. Backend Continuous Integration
+4. Backend Continuous Deployment
 
-### Frontend Application
+### Frontend Continuous Integration
 
-http://a2ec729a09bf64209946420746744b01-458530145.us-east-1.elb.amazonaws.com
+The Frontend CI workflow successfully performs linting, testing, and Docker image build.
 
-### Backend Movies API
+<img width="1365" height="683" alt="image" src="https://github.com/user-attachments/assets/f44bd03c-13ea-46ab-8cb0-aa19fa7b4b65" />
 
-http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com/movies
+
+### Frontend Continuous Deployment
+
+The Frontend CD workflow successfully builds and publishes the frontend Docker image and deploys it to Amazon EKS.
+
+<img width="1365" height="685" alt="image" src="https://github.com/user-attachments/assets/9c518dda-534f-4ba9-b54f-a3784ceaff8e" />
+
+
+### Backend Continuous Integration
+
+The Backend CI workflow successfully performs linting, testing, and Docker image build.
+
+<img width="1365" height="679" alt="image" src="https://github.com/user-attachments/assets/4e81bc89-c337-4327-a305-bf0d42682e95" />
+
+
+### Backend Continuous Deployment
+
+The Backend CD workflow successfully builds and publishes the backend Docker image and deploys it to Amazon EKS.
+
+<img width="1365" height="687" alt="image" src="https://github.com/user-attachments/assets/ffa3e70f-37c9-4730-84e6-cb42d2caabdb" />
+
 
 ---
+
+## Frontend Application
+
+The frontend application was successfully deployed to Amazon EKS and exposed using an AWS LoadBalancer service.
+
+The deployed application successfully displays the movie list.
+
+<img width="1600" height="813" alt="image" src="https://github.com/user-attachments/assets/b936ac7a-0ae0-4ef3-a87d-6959dea6f166" />
+
+
+---
+
+## Backend Application
+
+The backend application was successfully deployed to Amazon EKS and exposed using an AWS LoadBalancer service.
+
+The `/movies` API endpoint successfully returns movie data in JSON format.
+
+<img width="1600" height="807" alt="image" src="https://github.com/user-attachments/assets/baf81fe7-1fea-41cf-934f-c912f99c3c98" />
+
+
+---
+
+## Kubernetes Resources
+
+The following screenshot shows the running Kubernetes resources including:
+
+- Frontend Pod
+- Backend Pod
+- Frontend Service
+- Backend Service
+- Frontend Deployment
+- Backend Deployment
+- ReplicaSets
+
+Both frontend and backend pods are in the `Running` state.
+
+<img width="1477" height="757" alt="image" src="https://github.com/user-attachments/assets/c53c23f0-2d09-437a-84f0-aec81b9e88aa" />
+
+<img width="1476" height="751" alt="image" src="https://github.com/user-attachments/assets/048533a4-bcb4-49fd-a33c-00b9731697cc" />
+
+<img width="1477" height="755" alt="image" src="https://github.com/user-attachments/assets/f3bd1b41-bd9a-4c99-94e1-4c89f7ded35b" />
+
+---
+
+## Amazon ECR Repositories
+
+Separate Amazon ECR repositories were created for the frontend and backend Docker images.
+
+<img width="1211" height="601" alt="image" src="https://github.com/user-attachments/assets/a83f7a2b-201e-488d-ae49-b41f1e6c1e06" />
+
+### Frontend ECR Images
+
+The frontend Docker images were successfully pushed to Amazon ECR.
+
+<img width="1365" height="677" alt="image" src="https://github.com/user-attachments/assets/f460f0ad-0619-4bc9-bda0-fea72d2ae712" />
+
+
+### Backend ECR Images
+
+The backend Docker images were successfully pushed to Amazon ECR.
+
+<img width="1365" height="678" alt="image" src="https://github.com/user-attachments/assets/b424a3c2-27a8-4986-a8e8-775765f9745e" />
+
 
 ## Project Architecture
 
-The application consists of two independently containerized services:
-
-- **Frontend:** React application
-- **Backend:** Python/Flask REST API
-
-Both services are built as Docker images and stored in separate Amazon ECR repositories.
-
-GitHub Actions automatically performs testing, Docker image creation, image publishing, and deployment to Amazon EKS.
-
-The deployed frontend communicates with the backend through the public backend LoadBalancer.
-
-```text
-                    GitHub Repository
-                           |
-                           v
-                     GitHub Actions
-                    CI             CD
-                     |              |
-                     v              v
-              Tests / Lint     Docker Build
-                                    |
-                                    v
-                               Amazon ECR
-                                    |
-                                    v
-                               Amazon EKS
-                         ___________|___________
-                        |                       |
-                        v                       v
-                 Frontend Pod             Backend Pod
-                        |                       |
-                        v                       v
-                  LoadBalancer             LoadBalancer
-                        |                       |
-                        v                       v
-                   React App              /movies API
-```
+GitHub Repository  
+↓  
+GitHub Actions CI  
+↓  
+Docker Image Build  
+↓  
+Amazon ECR  
+↓  
+GitHub Actions CD  
+↓  
+Amazon EKS  
+↓  
+Kubernetes Deployment & Service  
+↓  
+AWS Load Balancer  
+↓  
+Frontend / Backend Application
 
 ---
 
-## Technologies Used
+## Deployment Verification
 
-### Frontend
-
-- React
-- JavaScript
-- Node.js
-- npm
-- Docker
-
-### Backend
-
-- Python
-- Flask
-- Pipenv
-- uWSGI
-- Docker
-
-### Cloud and DevOps
-
-- Amazon Web Services (AWS)
-- Amazon Elastic Kubernetes Service (EKS)
-- Amazon Elastic Container Registry (ECR)
-- Elastic Load Balancer
-- Kubernetes
-- Terraform
-- Docker
-- GitHub Actions
-- CI/CD
-
----
-
-## Repository Structure
-
-```text
-movie_pipeline_project/
-|
-├── .github/
-│   └── workflows/
-│       ├── frontend-ci.yaml
-│       ├── backend-ci.yaml
-│       ├── frontend-cd.yaml
-│       └── backend-cd.yaml
-│
-├── starter/
-│   ├── frontend/
-│   │   ├── Dockerfile
-│   │   ├── package.json
-│   │   ├── package-lock.json
-│   │   └── src/
-│   │
-│   └── backend/
-│       ├── Dockerfile
-│       ├── Pipfile
-│       ├── Pipfile.lock
-│       └── ...
-│
-├── setup/
-│   ├── terraform/
-│   ├── init.sh
-│   └── workspace-setup.sh
-│
-└── README.md
-```
-
----
-
-# CI/CD Pipelines
-
-The repository contains four GitHub Actions workflows.
-
-## Frontend Continuous Integration
-
-Workflow:
-
-```text
-.github/workflows/frontend-ci.yaml
-```
-
-The Frontend CI pipeline validates frontend changes before they are merged.
-
-The workflow performs:
-
-1. Repository checkout
-2. Node.js dependency installation
-3. Frontend linting
-4. Frontend automated tests
-5. Frontend Docker image build validation
-
-The workflow runs for frontend changes associated with pull requests to the `main` branch and can also be executed manually.
-
----
-
-## Backend Continuous Integration
-
-Workflow:
-
-```text
-.github/workflows/backend-ci.yaml
-```
-
-The Backend CI pipeline validates backend changes.
-
-The workflow performs:
-
-1. Repository checkout
-2. Python dependency installation
-3. Backend linting
-4. Backend automated tests
-5. Backend Docker image build validation
-
-The Docker build runs only after the required validation jobs complete successfully.
-
-The workflow runs for backend changes associated with pull requests to the `main` branch and can also be executed manually.
-
----
-
-## Backend Continuous Deployment
-
-Workflow:
-
-```text
-.github/workflows/backend-cd.yaml
-```
-
-The Backend CD pipeline deploys the backend application to AWS.
-
-The deployment process includes:
-
-1. Checkout repository
-2. Run backend validation
-3. Configure AWS credentials
-4. Authenticate with Amazon ECR
-5. Build the backend Docker image
-6. Tag the Docker image using the Git commit SHA
-7. Push the image to the backend ECR repository
-8. Configure access to the Amazon EKS cluster
-9. Update the Kubernetes backend deployment
-10. Verify the Kubernetes rollout
-
-The backend is exposed publicly using a Kubernetes `LoadBalancer` service.
-
-### Backend API
-
-```text
-http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com/movies
-```
-
-The `/movies` endpoint returns the movie data used by the frontend application.
-
----
-
-## Frontend Continuous Deployment
-
-Workflow:
-
-```text
-.github/workflows/frontend-cd.yaml
-```
-
-The Frontend CD pipeline deploys the React application to AWS.
-
-The deployment process includes:
-
-1. Checkout repository
-2. Run frontend validation
-3. Validate the backend API URL
-4. Configure AWS credentials
-5. Authenticate with Amazon ECR
-6. Build the frontend Docker image
-7. Inject the backend URL using `REACT_APP_MOVIE_API_URL`
-8. Tag the Docker image using the Git commit SHA
-9. Push the image to the frontend ECR repository
-10. Deploy the new image to Amazon EKS
-11. Verify the Kubernetes rollout
-
-The frontend is exposed publicly through a Kubernetes `LoadBalancer` service.
-
-### Frontend Application
-
-```text
-http://a2ec729a09bf64209946420746744b01-458530145.us-east-1.elb.amazonaws.com
-```
-
----
-
-# AWS Infrastructure
-
-Terraform is used to provision the AWS infrastructure required by the application.
-
-The infrastructure includes resources required for:
-
-- Amazon EKS
-- Amazon ECR
-- IAM
-- Kubernetes worker infrastructure
-- Networking
-- Application deployment
-
-### AWS Region
-
-```text
-us-east-1
-```
-
-### EKS Cluster
-
-```text
-cluster
-```
-
-### ECR Repositories
-
-```text
-frontend
-backend
-```
-
----
-
-# Creating the AWS Infrastructure
-
-Navigate to the Terraform directory:
-
-```bash
-cd setup/terraform
-```
-
-Initialize Terraform:
-
-```bash
-terraform init
-```
-
-Validate the Terraform configuration:
-
-```bash
-terraform validate
-```
-
-Review the infrastructure plan:
-
-```bash
-terraform plan
-```
-
-Create the infrastructure:
-
-```bash
-terraform apply
-```
-
-Review the Terraform outputs:
-
-```bash
-terraform output
-```
-
----
-
-# Configuring Amazon EKS
-
-Configure `kubectl` to communicate with the EKS cluster:
-
-```bash
-aws eks update-kubeconfig --name cluster --region us-east-1
-```
-
-Verify that the worker nodes are available:
-
-```bash
-kubectl get nodes
-```
-
-The project initialization script can then be used to configure the required Kubernetes access:
-
-```bash
-cd setup
-./init.sh
-```
-
----
-
-# GitHub Actions Secrets
-
-Repository secrets are configured under:
-
-```text
-Repository
-→ Settings
-→ Secrets and variables
-→ Actions
-```
-
-The following secrets are required:
-
-| Secret | Purpose |
-| --- | --- |
-| `AWS_ACCESS_KEY_ID` | AWS access key used by the deployment workflows |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret key used by the deployment workflows |
-| `REACT_APP_MOVIE_API_URL` | Public base URL of the backend application |
-
-AWS credentials are stored using GitHub Actions Secrets and are not hard-coded in the workflow files.
-
-### Backend URL used by the React application
-
-```text
-http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com
-```
-
-The `REACT_APP_MOVIE_API_URL` value contains the backend base URL.
-
-The `/movies` endpoint is accessed by the frontend application when retrieving movie data.
-
----
-
-# Docker
-
-Both application components have separate Docker images.
-
-## Build Backend Image Locally
-
-From the repository root:
-
-```bash
-docker build -t movie-backend:local starter/backend
-```
-
-## Build Frontend Image Locally
-
-```bash
-docker build \
-  --build-arg REACT_APP_MOVIE_API_URL=http://localhost:5000 \
-  -t movie-frontend:local \
-  starter/frontend
-```
-
-The production CI/CD pipelines build and publish the images automatically.
-
----
-
-# Kubernetes Deployment
-
-The frontend and backend are deployed independently to Amazon EKS.
-
-Check the running pods:
-
-```bash
-kubectl get pods
-```
-
-Check deployments:
-
-```bash
-kubectl get deployments
-```
-
-Check services:
-
-```bash
-kubectl get services
-```
-
-Check all Kubernetes resources:
+The deployment was verified using:
 
 ```bash
 kubectl get all
-```
 
-Both applications are exposed through Kubernetes `LoadBalancer` services.
+The command confirmed that:
 
----
-
-# Backend Verification
-
-Check the backend service:
-
-```bash
-kubectl get service backend
-```
-
-Check backend logs:
-
-```bash
-kubectl logs deployment/backend --tail=100
-```
-
-Verify the public backend API:
-
-```bash
-curl http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com/movies
-```
-
-A successful request returns the movie list as JSON.
+- Frontend pod is running successfully.
+- Backend pod is running successfully.
+- Frontend deployment has the required available replica.
+- Backend deployment has the required available replica.
+- Frontend service is exposed using an AWS LoadBalancer.
+- Backend service is exposed using an AWS LoadBalancer.
 
 ---
 
-# Frontend Verification
+## Deployment Status
 
-Check the frontend service:
-
-```bash
-kubectl get service frontend
-```
-
-Get the public frontend hostname:
-
-```bash
-kubectl get service frontend -o jsonpath="{.status.loadBalancer.ingress[0].hostname}"
-```
-
-The deployed frontend is available at:
-
-```text
-http://a2ec729a09bf64209946420746744b01-458530145.us-east-1.elb.amazonaws.com
-```
-
-The React application retrieves its movie information from the deployed backend API.
+| Component | Status |
+|---|---|
+| Frontend Continuous Integration | ✅ Successful |
+| Frontend Continuous Deployment | ✅ Successful |
+| Backend Continuous Integration | ✅ Successful |
+| Backend Continuous Deployment | ✅ Successful |
+| Frontend EKS Deployment | ✅ Running |
+| Backend EKS Deployment | ✅ Running |
+| Frontend LoadBalancer | ✅ Working |
+| Backend LoadBalancer | ✅ Working |
+| Frontend ECR Image | ✅ Available |
+| Backend ECR Image | ✅ Available |
 
 ---
 
-# Workflow Verification
+## Review Evidence
 
-Successful GitHub Actions runs should exist for all four required workflows:
+This repository includes deployment evidence for the required project review:
 
-| Workflow | Purpose |
-| --- | --- |
-| Frontend Continuous Integration | Lint, test and validate frontend changes |
-| Backend Continuous Integration | Lint, test and validate backend changes |
-| Frontend Continuous Deployment | Build, publish and deploy the frontend |
-| Backend Continuous Deployment | Build, publish and deploy the backend |
-
-The CI pipelines are used to validate application changes.
-
-The CD pipelines publish Docker images to Amazon ECR and deploy the corresponding application to Amazon EKS.
-
----
-
-# Deployment URLs
-
-| Component | URL |
-| --- | --- |
-| Frontend | http://a2ec729a09bf64209946420746744b01-458530145.us-east-1.elb.amazonaws.com |
-| Backend Movies API | http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com/movies |
-
----
-
-# Submission Evidence
-
-Before destroying the AWS infrastructure, screenshots should be captured showing the successful deployment.
-
-## Frontend
-
-Open the deployed application:
-
-```text
-http://a2ec729a09bf64209946420746744b01-458530145.us-east-1.elb.amazonaws.com
-```
-
-The screenshot should show the application and the public URL.
-
-
-<img width="1365" height="682" alt="image" src="https://github.com/user-attachments/assets/883e1065-5670-4bdb-84e2-72c8f8d1740a" />
-
-## Backend
-
-Open or verify:
-
-```text
-http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com/movies
-```
-
-The response should show the movie JSON.
-<img width="1365" height="683" alt="Screenshot 2026-08-26 222443" src="https://github.com/user-attachments/assets/4083f792-c310-44cd-9a19-dbd1ebb9be8c" />
-
-## Kubernetes
-
-Run:
-
-```bash
-kubectl get all
-```
-
-Capture the output showing the deployed frontend and backend resources.
-
-## GitHub Actions
-
-Successful runs should be visible for:
-
-- Frontend Continuous Integration
-- Backend Continuous Integration
-- Frontend Continuous Deployment
-- Backend Continuous Deployment
-
----
-
-# Destroying the Infrastructure
-
-After all required deployment evidence has been captured, the AWS infrastructure can be destroyed to avoid unnecessary resource usage.
-
-Navigate to:
-
-```bash
-cd setup/terraform
-```
-
-Run:
-
-```bash
-terraform destroy
-```
-
-Review the resources and confirm the operation when prompted.
-
----
-
-# Final Project Information
-
-| Item | Value |
-| --- | --- |
-| Project | Movie Picture Pipeline |
-| GitHub Repository | https://github.com/Rriio-09/movie_pipeline_project |
-| Frontend | http://a2ec729a09bf64209946420746744b01-458530145.us-east-1.elb.amazonaws.com |
-| Backend Movies API | http://a7d41dd03ba43462e847f16f29e56a5a-949129658.us-east-1.elb.amazonaws.com/movies |
-| AWS Region | `us-east-1` |
-| EKS Cluster | `cluster` |
-| Frontend ECR Repository | `frontend` |
-| Backend ECR Repository | `backend` |
+- ✅ Public GitHub repository
+- ✅ Four GitHub Actions workflows
+- ✅ Successful Frontend CI workflow
+- ✅ Successful Frontend CD workflow
+- ✅ Successful Backend CI workflow
+- ✅ Successful Backend CD workflow
+- ✅ Working Frontend application with service URL visible
+- ✅ Working Backend `/movies` API with service URL visible
+- ✅ `kubectl get all` output showing running Kubernetes resources
+- ✅ Amazon ECR repositories and Docker images
 
 ---
 
 ## Project Status
 
-- Frontend Continuous Integration — Successful
-- Backend Continuous Integration — Successful
-- Frontend Continuous Deployment — Successful
-- Backend Continuous Deployment — Successful
-- Frontend deployed to Amazon EKS
-- Backend deployed to Amazon EKS
-- Docker images stored in Amazon ECR
-- Infrastructure managed using Terraform
+The Movie Pipeline project has been successfully containerized and deployed using an automated CI/CD pipeline.
+
+The frontend and backend Docker images are stored in Amazon ECR and deployed to Amazon EKS using GitHub Actions and Kubernetes.
+
+**Final Status: Deployment Successful**
